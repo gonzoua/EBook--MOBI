@@ -25,7 +25,7 @@ sub text {
     my $txt  = shift;
 
     #we have to make sure that HTML entities get encoded
-    my $mhtml = encode_entities($txt);
+    my $mhtml = encode_entities($txt, '<>&"');
 
     return $mhtml;
 }
