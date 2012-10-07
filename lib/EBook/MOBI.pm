@@ -193,6 +193,7 @@ sub make {
         my $tmp = $self->{html_data};
     $self->{html_data} = "<html>
 <head>
+<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />
 </head>
 <body>
 " . $tmp . "</body>\n</html>\n";
@@ -254,6 +255,7 @@ sub _generate_toc {
     my $tmp = $self->{html_data};
     $self->{html_data} = "<html>
 <head>
+<meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\" />
 <guide>
 <reference type=\"toc\" title=\"$self->{toc_label}\" filepos=\"00000000\"/>
 </guide>
