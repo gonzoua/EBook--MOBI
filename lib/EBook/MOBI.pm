@@ -294,7 +294,7 @@ sub _generate_toc {
             $self->_debug("...ref to char $this_pos,\ttitle '$1'");
 
             $self->{html_data} =~
-            s/<li><a filepos="00000000">$m<\/a><\/li><!-- TOC entry -->/<li><a filepos="$fill_pos">$m<\/a><\/li><!-- TOC entry -->/;
+            s/\Q<li><a filepos="00000000">$m<\/a><\/li><!-- TOC entry -->\E/<li><a filepos="$fill_pos">$m<\/a><\/li><!-- TOC entry -->/;
         }
         elsif ($line =~ /<!-- TOC start -->$/) {
             my $this_pos = $chars;
