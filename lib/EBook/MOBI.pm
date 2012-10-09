@@ -7,6 +7,7 @@ our $VERSION = 0.53;
 
 # needed CPAN stuff
 use File::Temp qw(tempfile);
+use Encode;
 
 # needed local stuff
 use EBook::MOBI::Driver::POD;
@@ -281,13 +282,14 @@ sub _generate_toc {
 
     # now we need to calculate the positions for "filepos"
     my $chars = 0;
-    my $data_copy = $self->{html_data};
+    my $data_copy = encode("utf8", $self->{html_data});
+
     foreach my $line (split("\n", $data_copy)) {
 
         if ($line =~ m/^<h1>(.*)<\/h1>$/) {
             my $this_pos = $chars;
             my $fill_pos = sprintf("%08d", $this_pos);
-            my $m = $1;
+            my $m = decode("utf8", $1);
 
             $self->_debug("...ref to char $this_pos,\ttitle '$1'");
 
