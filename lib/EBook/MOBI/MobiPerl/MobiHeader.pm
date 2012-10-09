@@ -356,7 +356,7 @@ sub new {
     bless {
 	TYPE => 2,
 	VERSION => 4,
-	CODEPAGE => 1252,
+	CODEPAGE => 65001,
 	TITLE => "Unspecified Title",
 	AUTHOR => "Unspecified Author",
 	PUBLISHER => "",
@@ -613,6 +613,8 @@ sub get_data {
     substr ($res, 0xd8, 4, pack ("N", 0xFFFFFFFF));
     substr ($res, 0xdc, 4, pack ("N", 0xFFFFFFFF));
 
+    # Multibyte overlap trailing entries
+    substr ($res, 0xe0, 4, pack ("N", 0x00000001));
 
     $res .= $self->get_extended_header_data ();
     $res .= pack ("a*", $self->get_title ());
