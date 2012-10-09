@@ -45,6 +45,27 @@ use constant DOC_UNCOMPRESSED => scalar 1;
 use constant DOC_COMPRESSED => scalar 2;
 use constant DOC_RECSIZE => scalar 4096;
 
+# helper function
+sub is_valid_utf8
+{
+    my $string = shift;
+    my $valid_utf8_regexp = <<'REGEX' ;
+        [\x{00}-\x{7f}]
+      | [\x{c2}-\x{df}][\x{80}-\x{bf}]
+      |         \x{e0} [\x{a0}-\x{bf}][\x{80}-\x{bf}]
+      | [\x{e1}-\x{ec}][\x{80}-\x{bf}][\x{80}-\x{bf}]
+      |         \x{ed} [\x{80}-\x{9f}][\x{80}-\x{bf}]
+      | [\x{ee}-\x{ef}][\x{80}-\x{bf}][\x{80}-\x{bf}]
+      |         \x{f0} [\x{90}-\x{bf}][\x{80}-\x{bf}]
+      | [\x{f1}-\x{f3}][\x{80}-\x{bf}][\x{80}-\x{bf}][\x{80}-\x{bf}]
+      |         \x{f4} [\x{80}-\x{8f}][\x{80}-\x{bf}][\x{80}-\x{bf}]
+REGEX
+    my $result = $string =~ m/^($valid_utf8_regexp)*/ogx;
+    my $pos = pos $string || 0;
+    return ($pos == length($string));
+}
+
+
 # Constructor of this class
 sub new {
     my $self=shift;
@@ -126,6 +147,11 @@ sub pack {
     # break the document into record-sized chunks.
     # According to MobiPerl (html2mobi)
     my $current_record_index = 1;
+    use Encode;
+    $html = encode("utf8", $html);
+
+    my $prev_overlap_size = 0;
+
     for( my $i = 0; $i < length($html); $i += DOC_RECSIZE ) {
 
         # DEBUG: print the current record index
@@ -135,9 +161,24 @@ sub pack {
             );
         my $record = $mobi->append_Record;
         my $chunk = substr($html,$i,DOC_RECSIZE);
+
         $record->{'data'} =
             EBook::MOBI::MobiPerl::Palm::Doc::_compress_record
             ( $version, $chunk );
+        my $overlap = '';
+        # Remove overlap part of chunk
+        substr($chunk, 0, $prev_overlap_size) = '' if ($prev_overlap_size);
+        while ((length($overlap) < 4) && !is_valid_utf8($chunk . $overlap)) {
+            $overlap .= substr($html, $i + DOC_RECSIZE + length($overlap), 1);
+        }
+        if (length($overlap) == 4) {
+            die "Failed to construct valid utf8 string [$chunk][$overlap]";
+        }
+
+        $record->{'data'} .= $overlap;
+        $record->{'data'} .= chr(length($overlap));
+        $prev_overlap_size = length($overlap);
+
         $record->{'id'} = $current_record_index++;
         $header->{'records'} ++;
     }
