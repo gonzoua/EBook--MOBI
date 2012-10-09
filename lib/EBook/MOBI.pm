@@ -24,6 +24,8 @@ sub new {
                 filename  => 'book.mobi',
                 title     => 'This Book has no Title',
                 author    => 'This Book has no Author',
+                cover     => undef, # path to cover image
+                cover_tn  => undef, # path to cover thumbnail image
 
                 encoding  => ':encoding(UTF-8)',
            default_driver => 'EBook::MOBI::Driver::POD',
@@ -48,6 +50,8 @@ sub reset {
     $self->{filename } = 'book',
     $self->{title    } = 'This Book has no Title',
     $self->{author   } = 'This Book has no Author',
+    $self->{cover    } = undef;
+    $self->{cover_tn } = undef;
 
     $self->{encoding } = ':encoding(UTF-8)',
 $self->{default_driver}= 'EBook::MOBI::Driver::POD',
@@ -93,6 +97,18 @@ sub set_author {
     my $self = shift;
 
     $self->{author} = shift;
+}
+
+sub set_cover_image {
+    my $self = shift;
+
+    $self->{cover} = shift;
+}
+
+sub set_cover_thumbnail_image {
+    my $self = shift;
+
+    $self->{cover_tn} = shift;
 }
 
 sub set_filename {
@@ -220,6 +236,8 @@ sub save {
                     $self->{filename},
                     $self->{author},
                     $self->{title},
+                    $self->{cover},
+                    $self->{cover_tn},
                 );
 }
 

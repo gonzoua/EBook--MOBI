@@ -115,7 +115,9 @@ sub pack {
         $html,      # data to put in the mobi eBook
         $filename,  # filename (with path) of the desired eBook
         $author,    # author of the eBook
-        $title      # title of the eBook
+        $title,     # title of the eBook
+        $cover,     # path to cover image
+        $cover_tn   # path to cover thumbnail image
        ) = @_;
 
     # un-comment if you need to see all the HTML
@@ -171,8 +173,9 @@ sub pack {
         while ((length($overlap) < 4) && !is_valid_utf8($chunk . $overlap)) {
             $overlap .= substr($html, $i + DOC_RECSIZE + length($overlap), 1);
         }
+
         if (length($overlap) == 4) {
-            die "Failed to construct valid utf8 string [$chunk][$overlap]";
+            die "Failed to construct valid utf8 string";
         }
 
         $record->{'data'} .= $overlap;
@@ -196,6 +199,11 @@ sub pack {
                               0
                             );
 
+
+    # Looking for pictures in the html data,
+    # storing the path of the pics in $self->{picture_paths}
+    $self->_gather_IMG_ref($html);
+
     # Add MOBI header
     # According to MobiPerl (html2mobi)
     my $mh = new EBook::MOBI::MobiPerl::MobiHeader;
@@ -203,15 +211,26 @@ sub pack {
     $mh->set_author ($author);
     $mh->set_image_record_index ($current_record_index);
 
+    # Get IDs for cover and thumbnail (if set)
+    if (defined($cover)) {
+        my $cover_id = @{$self->{picture_paths}};
+        push @{$self->{picture_paths}}, $cover;
+        $mh->set_cover_offset($cover_id);
+    }
+
+    if (defined($cover_tn)) {
+        my $cover_tn_id = @{$self->{picture_paths}};
+        push @{$self->{picture_paths}}, $cover_tn;
+        $mh->set_cover_offset($cover_tn_id);
+    }
+
+
+
     $header->{'data'} .= $mh->get_data ();
 
     # Add pictures into the binary mobi format.
     # Each picture gets its own record, so splitting into chunks.
 
-    # Looking for pictures in the html data,
-    # storing the path of the pics in $self->{picture_paths}
-    $self->_gather_IMG_ref($html);
-    
     # add each pic to the mobi container
     foreach my $img_path (@{$self->{picture_paths}}) {
 
