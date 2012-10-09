@@ -19,6 +19,7 @@ package EBook::MOBI::MobiPerl::EXTH;
 
 use FindBin qw($RealBin);
 use lib "$RealBin";
+use EBook::MOBI::MobiPerl::Util;
 
 use strict;
 
@@ -163,7 +164,7 @@ sub add {
     my $data = shift;
     my $type = $self->get_type ($typename);
     if (is_binary_data ($type)) {
-	my $hex = MobiPerl::Util::iso2hex ($data);
+	my $hex = EBook::MOBI::MobiPerl::Util::iso2hex ($data);
 	#print STDERR "EXTH add: $typename - $type - ", int($data), " - $hex\n";
     } else {
 	#print STDERR "EXTH add: $typename - $type - $data\n";
