@@ -214,6 +214,8 @@ sub make {
 <body>
 " . $tmp . "</body>\n</html>\n";
     }
+
+    $self->_fixup_anchors();
 }
 
 sub print_mhtml {
@@ -306,6 +308,33 @@ sub _generate_toc {
         $chars += length($line) + 1;
     }
 
+}
+
+sub _fixup_anchors {
+    my $self = shift;
+
+    $self->_debug("fixing up anchors...");
+
+    # now we need to calculate the positions for "filepos"
+    my $chars = 0;
+    my $data_copy = encode("utf8", $self->{html_data});
+    my %locations;
+
+    foreach my $line (split("\n", $data_copy)) {
+        if ($line =~ m/^<a id="(.*?)"/) {
+            $locations{$1} = $chars;
+        }
+        $chars += length($line) + 1;
+    }
+
+    foreach my $l (keys %locations) {
+        my $pos = sprintf("%08d", $locations{$l});
+        my $href_part = "href=\"#$l\"";
+        my $old = "<a $href_part filepos=\"00000000\">";
+        $href_part =~ s/./ /g;
+        my $new = "<a $href_part filepos=\"$pos\">";
+        $self->{html_data} =~ s/\Q$old\E/$new/g;
+    }
 }
 
 1;
